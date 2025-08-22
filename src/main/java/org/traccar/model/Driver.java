@@ -31,6 +31,12 @@ public class Driver extends ExtendedModel {
         this.name = name;
     }
 
+    private String amount;
+
+    public String getAmount() { return amount; }
+
+    public void setAmount(String amount) { this.amount = amount; }
+
     private String uniqueId;
 
     public String getUniqueId() {
@@ -40,5 +46,17 @@ public class Driver extends ExtendedModel {
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId.trim();
     }
+
+    private String validity;
+
+    public String getValidity() { return validity; }
+
+    public void setValidity(String validity) { this.validity = validity; }
+
+    private String time;
+
+    public String getTime() { return time; }
+
+    public void setTime(String time) { this.time = time; }
 
 }

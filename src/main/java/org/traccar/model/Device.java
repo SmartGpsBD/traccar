@@ -59,14 +59,19 @@ public class Device extends GroupedModel implements Disableable, Schedulable {
         this.uniqueId = uniqueId.trim();
     }
 
-    public static final String STATUS_UNKNOWN = "unknown";
     public static final String STATUS_ONLINE = "online";
     public static final String STATUS_OFFLINE = "offline";
+    public static final String STATUS_EXPIRED = "expired";
 
     private String status;
 
     @QueryIgnore
     public String getStatus() {
+        if (expirationTime != null && expirationTime.before(new Date())) {
+            return STATUS_EXPIRED;
+        } else if (!STATUS_ONLINE.equals(status) && expirationTime != null && expirationTime.after(new Date())) {
+            return STATUS_OFFLINE;
+        }
         return status != null ? status : STATUS_OFFLINE;
     }
 
@@ -106,6 +111,12 @@ public class Device extends GroupedModel implements Disableable, Schedulable {
         this.phone = phone != null ? phone.trim() : null;
     }
 
+    private String imei;
+
+    public String getImei() { return imei; }
+
+    public void setImei(String imei) { this.imei = imei; }
+
     private String model;
 
     public String getModel() {
@@ -115,6 +126,18 @@ public class Device extends GroupedModel implements Disableable, Schedulable {
     public void setModel(String model) {
         this.model = model;
     }
+
+    private String activation;
+
+    public String getActivation() { return activation; }
+
+    public void setActivation(String activation) { this.activation = activation; }
+
+    private Date payment;
+
+    public Date getPayment() { return payment; }
+
+    public void setPayment(Date payment) { this.payment = payment; }
 
     private String contact;
 

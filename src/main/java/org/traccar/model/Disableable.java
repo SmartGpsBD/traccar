@@ -16,6 +16,7 @@
 package org.traccar.model;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public interface Disableable {
 
@@ -31,8 +32,22 @@ public interface Disableable {
         if (getDisabled()) {
             throw new SecurityException(getClass().getSimpleName() + " is disabled");
         }
-        if (getExpirationTime() != null && System.currentTimeMillis() > getExpirationTime().getTime()) {
-            throw new SecurityException(getClass().getSimpleName() + " has expired");
+        if (getExpirationTime() != null) {
+            long currentTime = System.currentTimeMillis();
+            long expirationTimeMillis = getExpirationTime().getTime();
+
+            if (currentTime > expirationTimeMillis) {
+                if (this instanceof Device device) {
+                    if ("Special".equalsIgnoreCase(device.getCategory())) {
+                        long gracePeriodEndMillis = expirationTimeMillis + TimeUnit.DAYS.toMillis(7);
+                        if (currentTime > gracePeriodEndMillis) {
+                            throw new SecurityException(getClass().getSimpleName() + " has expired");
+                        }
+                        return;
+                    }
+                }
+                throw new SecurityException(getClass().getSimpleName() + " has expired");
+            }
         }
     }
 

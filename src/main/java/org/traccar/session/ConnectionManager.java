@@ -135,7 +135,6 @@ public class ConnectionManager implements BroadcastInterface {
 
         if (device != null) {
             unknownByEndpoint.remove(connectionKey);
-            device.checkDisabled();
 
             DeviceSession oldSession = sessionsByDeviceId.remove(device.getId());
             if (oldSession != null) {
@@ -206,7 +205,7 @@ public class ConnectionManager implements BroadcastInterface {
     }
 
     public void deviceUnknown(long deviceId) {
-        updateDevice(deviceId, Device.STATUS_UNKNOWN, null);
+        updateDevice(deviceId, Device.STATUS_OFFLINE, null);
         removeDeviceSession(deviceId);
     }
 
@@ -237,14 +236,20 @@ public class ConnectionManager implements BroadcastInterface {
         }
 
         String oldStatus = device.getStatus();
-        device.setStatus(status);
+
+        if (device.getExpirationTime() != null && device.getExpirationTime().before(new Date())) {
+            device.setStatus(Device.STATUS_EXPIRED);
+            status = Device.STATUS_EXPIRED;
+        } else {
+            device.setStatus(status);
+        }
 
         if (!status.equals(oldStatus)) {
             String eventType;
             Map<Event, Position> events = new HashMap<>();
             eventType = switch (status) {
                 case Device.STATUS_ONLINE -> Event.TYPE_DEVICE_ONLINE;
-                case Device.STATUS_UNKNOWN -> Event.TYPE_DEVICE_UNKNOWN;
+                case Device.STATUS_EXPIRED -> Event.TYPE_DEVICE_EXPIRED;
                 default -> Event.TYPE_DEVICE_OFFLINE;
             };
             events.put(new Event(eventType, deviceId), null);
@@ -302,6 +307,7 @@ public class ConnectionManager implements BroadcastInterface {
                 }
             }
         }
+        device.checkDisabled();
     }
 
     @Override
